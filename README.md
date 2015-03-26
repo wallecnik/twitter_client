@@ -4,8 +4,8 @@ vkladat pouze zdrojovy kod, ne cely projekt v intelij nebo neco jineho
 
 
 
-Tomas  - vedouci, android gui, config, testy
+Tomas  - vedouci, ui, config, testy
 
-Kristy - twitter API
+Kristy - twitter API, JSON
 
-Matej  - http, rest 
+Matej  - http, rest, TCP
