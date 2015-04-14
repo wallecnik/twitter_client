@@ -1,3 +1,4 @@
+package cz.muni.fi.ib053.twitter.client;
 
 import java.io.*;
 import java.util.Properties;
@@ -23,11 +24,11 @@ public class ConfigImpl implements Config{
      * be attempted to be loaded again.
      *
      * @return an instance of Config
-     * @throws IOException if an I/O error occurred
+     * @throws java.io.IOException if an I/O error occurred
      */
     public void load() throws IOException {
+        prop = new Properties();
         try (InputStream is = new FileInputStream(configFile)) {
-            prop = new Properties();
             prop.load(is);
         } catch (FileNotFoundException fnfe) {
             System.err.println("Config file not present. " +
@@ -40,7 +41,7 @@ public class ConfigImpl implements Config{
      * attempts to create one. If the method throws an IOException, the state of config
      * is undefined and should be attempted to be stored again.
      *
-     * @throws IOException if the data cannot be written or the file cannot be created
+     * @throws java.io.IOException if the data cannot be written or the file cannot be created
      */
     public void store() throws IOException {
         Writer output = new FileWriter(configFile);

@@ -1,3 +1,4 @@
+package cz.muni.fi.ib053.twitter.client;
 
 import java.io.IOException;
 
@@ -14,7 +15,7 @@ public interface Config {
      * Loads a configuration file. If the file does not exist the implementation should
      * log a warning.
      *
-     * @throws IOException if an I/O error occurred
+     * @throws java.io.IOException if an I/O error occurred
      */
     void load() throws IOException;
 
@@ -22,7 +23,7 @@ public interface Config {
      * Stores the configuration data. If there is no configuration file, this method
      * attempts to create one.
      *
-     * @throws IOException if the data cannot be written or the file cannot be created
+     * @throws java.io.IOException if the data cannot be written or the file cannot be created
      */
     void store() throws IOException;
 
