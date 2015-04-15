@@ -13,7 +13,7 @@ public interface Config {
 
     /**
      * Loads a configuration file. If the file does not exist the implementation should
-     * log a warning.
+     * log a warning and
      *
      * @throws java.io.IOException if an I/O error occurred
      */

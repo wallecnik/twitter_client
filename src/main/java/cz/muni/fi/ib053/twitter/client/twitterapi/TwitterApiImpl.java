@@ -13,4 +13,8 @@ public class TwitterApiImpl implements TwitterApi {
         this.config = config;
     }
 
+    public String hello() {
+        return HttpNative.hello();
+    }
+
 }

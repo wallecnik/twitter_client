@@ -5,5 +5,6 @@ package cz.muni.fi.ib053.twitter.client.twitterapi;
  */
 public interface TwitterApi {
 
+    String hello();
 
 }

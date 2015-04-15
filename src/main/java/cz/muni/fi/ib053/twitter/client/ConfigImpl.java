@@ -16,7 +16,7 @@ public class ConfigImpl implements Config{
     private static final String PROP_PASSWORD = "password";
 
     private static Properties prop = null;
-    private static final String configFile = "config.properties";
+    private static final String configFile = "src/main/resources/config.properties";
 
     /**
      * Loads a configuration file. If the file does not exist a warning is generated.

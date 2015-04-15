@@ -7,6 +7,10 @@ import java.io.IOException;
 
 public class Main {
 
+    static {
+        System.loadLibrary("HttpNative"); // used for tests. This library in classpath only
+    }
+
     public static void main (String[] args) {
 
         Config config = new ConfigImpl();
@@ -20,6 +24,7 @@ public class Main {
         TwitterApi controller = new TwitterApiImpl(config);
 
         //run sth here
+        controller.hello();
 
         try {
             config.store();

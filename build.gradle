@@ -1,0 +1,46 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+def platform = "unknown"
+
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    platform = "windows"
+}
+if (Os.isFamily(Os.FAMILY_UNIX)) {
+    platform = "unix"
+}
+if (Os.isFamily(Os.FAMILY_MAC)) {
+    platform = "darwin"
+}
+
+sourceCompatibility = 1.8
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task compileLibraryHttpNative(type:Exec) {
+    description = "Build Native Shared Library HttpNative"
+
+    if (platform == "windows") {
+        commandLine 'cmd', '' //TODO: windows script
+    }
+    if (platform == "unix") {
+        commandLine 'sh', 'src/main/resources/compileLibraryHttpNative.sh'
+    }
+}
+
+//tasks.assemble.dependsOn(compileLibraryHttpNative)
+
+run {
+    mainClassName = "cz.muni.fi.ib053.twitter.client.Main"
+    systemProperty "java.library.path", "build/binaries/debug/" + platform
+}
