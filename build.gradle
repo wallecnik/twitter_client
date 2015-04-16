@@ -1,13 +1,12 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
-
 apply plugin: 'java'
 apply plugin: 'application'
 
 def platform = "unknown"
 
 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    platform = "windows"
+    platform = "win32"
 }
 if (Os.isFamily(Os.FAMILY_UNIX)) {
     platform = "unix"
@@ -25,16 +24,17 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.json', name: 'json', version: '20141113'
 }
 
 task compileLibraryHttpNative(type:Exec) {
     description = "Build Native Shared Library HttpNative"
 
-    if (platform == "windows") {
-        commandLine 'cmd', '' //TODO: windows script
+    if (platform == "win32") {
+        commandLine 'cmd', 'compileLibraryHttpNative.bat'
     }
-    if (platform == "unix") {
-        commandLine 'sh', 'src/main/resources/compileLibraryHttpNative.sh'
+    if (platform == "unix" || platform == "darwin") {
+        commandLine 'sh', 'compileLibraryHttpNative.sh'
     }
 }
 

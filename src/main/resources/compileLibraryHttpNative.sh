@@ -8,7 +8,7 @@ if [[ `uname` == 'Linux' ]]; then
 elif [[ `uname` == 'Darwin' ]]; then
    export libname='libHttpNative.dylib'
    export platform='darwin'
-   export JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk'
+   export JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home'
 fi
 
 [ -d build/ ] || mkdir build/
@@ -18,6 +18,6 @@ fi
 
 gcc -fpic -shared -o "build/binaries/debug/$platform/$libname" -lcurl \
     src/main/jni/HttpNative.c \
-    -I "$JAVA_HOME/Contents/Home/include/" \
-    -I "$JAVA_HOME/Contents/Home/include/darwin/"
+    -I "$JAVA_HOME/include/" \
+    -I "$JAVA_HOME/include/$platform/"
 
