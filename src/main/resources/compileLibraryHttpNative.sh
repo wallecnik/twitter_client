@@ -8,7 +8,7 @@ if [[ `uname` == 'Linux' ]]; then
 elif [[ `uname` == 'Darwin' ]]; then
    export libname='libHttpNative.dylib'
    export platform='darwin'
-   export JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home'
+   export JAVA_HOME='<fill-in-the-jdk-location>'
 fi
 
 [ -d build/ ] || mkdir build/
