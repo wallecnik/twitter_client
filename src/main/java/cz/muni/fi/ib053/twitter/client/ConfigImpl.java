@@ -15,6 +15,8 @@ public class ConfigImpl implements Config{
     private static final String PROP_USERNAME = "username";
     private static final String PROP_PASSWORD = "password";
 
+    private static final String PROP_NOT_LOADED = "properties file not loaded";
+
     private static Properties prop = null;
     private static final String configFile = "src/main/resources/config.properties";
 
@@ -54,20 +56,20 @@ public class ConfigImpl implements Config{
      */
 
     public String getUsername() {
-        if (prop == null) throw new IllegalStateException("properties file not loaded");
+        if (prop == null) throw new IllegalStateException(PROP_NOT_LOADED);
         return prop.getProperty(PROP_USERNAME);
     }
     public void   setUsername(String username) {
-        if (prop == null) throw new IllegalStateException("properties file not loaded");
+        if (prop == null) throw new IllegalStateException(PROP_NOT_LOADED);
         prop.setProperty(PROP_USERNAME, username);
     }
 
     public String getPassword() {
-        if (prop == null) throw new IllegalStateException("properties file not loaded");
+        if (prop == null) throw new IllegalStateException(PROP_NOT_LOADED);
         return prop.getProperty(PROP_PASSWORD);
     }
     public void   setPassword(String password) {
-        if (prop == null) throw new IllegalStateException("properties file not loaded");
+        if (prop == null) throw new IllegalStateException(PROP_NOT_LOADED);
         prop.setProperty(PROP_PASSWORD, password);
     }
 
