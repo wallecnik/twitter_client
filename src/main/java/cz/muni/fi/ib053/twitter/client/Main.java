@@ -1,9 +1,7 @@
 package cz.muni.fi.ib053.twitter.client;
 
 
-import cz.muni.fi.ib053.twitter.client.twitterapi.Tweet;
-import cz.muni.fi.ib053.twitter.client.twitterapi.TwitterApi;
-import cz.muni.fi.ib053.twitter.client.twitterapi.TwitterApiImpl;
+import cz.muni.fi.ib053.twitter.client.twitterapi.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,6 +120,13 @@ public class Main {
                     for (Tweet tweet : tweets) {
                         System.out.println(tweet);
                     }
+                }
+                break;
+            case "hello":
+                try {
+                    System.out.println(HttpNative.httpRequest("", "", "/file.txt", "http://tomas.valka.info", "", "", ""));
+                } catch (BadResponseCodeException e) {
+                    e.printStackTrace();
                 }
                 break;
             case "exit":
