@@ -1,8 +1,5 @@
 package cz.muni.fi.ib053.twitter.client;
 
-import cz.muni.fi.ib053.twitter.client.twitterapi.TwitterApi;
-import cz.muni.fi.ib053.twitter.client.twitterapi.TwitterApiImpl;
-
 import java.io.IOException;
 
 public class Main {
@@ -21,10 +18,18 @@ public class Main {
             return;
         }
 
-        TwitterApi controller = new TwitterApiImpl(config);
+        //TwitterApi controller = new TwitterApiImpl(config);
+
+        //String json = "{param:\"content\"}";
+
+        //JSONObject obj = new JSONObject(json);
+
+        //System.out.println(obj.get("param"));
+
+
 
         //run sth here
-        controller.hello();
+        //controller.hello();
 
         try {
             config.store();
