@@ -16,8 +16,8 @@ fi
 [ -d build/binaries/debug/ ] || mkdir build/binaries/debug/
 [ -d "build/binaries/debug/$platform/" ] || mkdir "build/binaries/debug/$platform/"
 
-gcc -fpic -shared -o "build/binaries/debug/$platform/$libname" -lcurl \
-    src/main/jni/HttpNative.c \
+g++ -fpic -shared -o "build/binaries/debug/$platform/$libname" -lcurl \
+    src/main/jni/HttpNative.cpp \
     -I "$JAVA_HOME/include/" \
     -I "$JAVA_HOME/include/$platform/"
 
