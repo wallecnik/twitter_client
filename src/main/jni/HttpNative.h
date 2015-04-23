@@ -21,6 +21,23 @@ JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNa
 
 std::string HttpNative_httpRequest(const char* method, const char* protocol, const char* jpath, const char* host, const char* usetAgent, const char* autorization, const char* content);
 
+/*
+ * Class:     cz_muni_fi_ib053_twitter_client_twitterapi_HttpNative
+ * Method:    httpRequest
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNative_httpRequest (
+    JNIEnv * env,
+    jclass class,
+    jstring method,
+    jstring protocol,
+    jstring path,
+    jstring host,
+    jstring user_agent,
+    jstring authorization,
+    jstring content
+    );
+
 #ifdef __cplusplus
 }
 #endif

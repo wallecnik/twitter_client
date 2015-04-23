@@ -31,7 +31,3 @@ public class HttpNative {
     ) throws BadResponseCodeException;
 
 }
-
-enum Method {
-    POST, GET, SEND
-}

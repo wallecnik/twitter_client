@@ -1,42 +1,14 @@
 package cz.muni.fi.ib053.twitter.client.twitterapi;
 
 import cz.muni.fi.ib053.twitter.client.Config;
+import org.json.JSONObject;
 
-import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Created by Wallecnik on 14.04.15.
  */
 public class TwitterApiImpl implements TwitterApi {
-    @Override
-    public void sendTweet(String input) {
-
-    }
-
-    @Override
-    public List<String> showTweets(int count) {
-        return null;
-    }
-
-    @Override
-    public void requestSignIn() {
-
-    }
-
-    @Override
-    public void signIn(String username, String password) {
-
-    }
-
-    @Override
-    public void sendPin(String pin) {
-
-    }
-
-    @Override
-    public boolean isSignedIn() {
-        return false;
-    }
 
     private Config config;
 
@@ -44,7 +16,18 @@ public class TwitterApiImpl implements TwitterApi {
         this.config = config;
     }
 
+    @Override
+    public boolean sendTweet(String input) {
+        return false;
+    }
+
+    @Override
+    public SortedSet<Tweet> showTweets(int count) {
+        return null;
+    }
+
     public String hello() {
+        JSONObject json = new JSONObject();
 
         return HttpNative.hello();
     }
