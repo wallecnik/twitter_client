@@ -12,4 +12,4 @@ IF NOT EXIST build\binaries\debug md build\binaries\debug
 IF NOT EXIST build\binaries\debug\%platform% md build\binaries\debug\%platform%
 
 
-gcc -fpic -shared -o build\binaries\debug\%platform%\%libname% -lcurl src\main\jni\HttpNative.c -I %java_home%\include\ -I %java_home%\include\%platform%\
+g++ -fpic -shared -o build\binaries\debug\%platform%\%libname% -lcurl src\main\jni\HttpNative.cpp -I %java_home%\include\ -I %java_home%\include\%platform%\
