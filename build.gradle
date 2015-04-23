@@ -25,6 +25,10 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'org.json:json:20141113'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.slf4j:slf4j-log4j12:1.7.12'
+    compile 'log4j:log4j:1.2.17'
+    compile 'org.apache.commons:commons-lang3:3.4'
 }
 
 task compileLibraryHttpNative(type:Exec) {
@@ -42,5 +46,4 @@ task compileLibraryHttpNative(type:Exec) {
 
 run {
     mainClassName = "cz.muni.fi.ib053.twitter.client.Main"
-    systemProperty "java.library.path", "build/binaries/debug/" + platform
 }
