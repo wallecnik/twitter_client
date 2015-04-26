@@ -1,5 +1,7 @@
 package cz.muni.fi.ib053.twitter.client.twitterapi;
 
+import org.json.JSONObject;
+
 import java.util.SortedSet;
 
 /**
@@ -12,11 +14,11 @@ public interface TwitterApi {
     boolean sendTweet(String input);
 
     /**
-     * Returns List of <code>count</code> last tweets
+     * Returns List of <code>count</code> last tweets.
+     * Latest tweets are listed first.
      *
      * @param count
      * @return
      */
     SortedSet<Tweet> showTweets(int count);
-
 }

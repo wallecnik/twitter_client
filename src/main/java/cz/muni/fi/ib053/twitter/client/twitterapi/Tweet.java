@@ -7,22 +7,29 @@ import java.time.Instant;
  */
 public final class Tweet implements Comparable<Tweet> {
 
-    private final Instant created;
-    private final String  content;
-    private final Long    id;
+    //private final Instant   created;      // TODO: Solve problems with String -> Instant conversion
+    private final Long      id;
+    private final String    username;
+    private final String    text;
+    private final String    created;
 
-    public Tweet(Long id, Instant created, String content) {
+    public Tweet(Long id, String created, String username, String text) {
         this.id      = id;
         this.created = created;
-        this.content = content;
+        this.username = username;
+        this.text = text;
     }
 
-    public Instant getCreated() {
+    public String getCreated() {
         return created;
     }
 
-    public String getContent() {
-        return content;
+    public String getText() {
+        return text;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public Long getId() {
@@ -70,5 +77,15 @@ public final class Tweet implements Comparable<Tweet> {
     @Override
     public int compareTo(Tweet o) {
         return this.created.compareTo(o.created);
+    }
+
+    @Override
+    public String toString() {
+        return "Tweet{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", text='" + text + '\'' +
+                ", created='" + created + '\'' +
+                '}';
     }
 }
