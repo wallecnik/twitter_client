@@ -13,6 +13,7 @@ import java.util.*;
  * @version 26.04.2015
  *
  * To be consistent with Twitter parameter name conventions, variables are not camelCased.
+ *
  */
 public class TwitterApiImpl implements TwitterApi {
 
@@ -29,31 +30,23 @@ public class TwitterApiImpl implements TwitterApi {
         this.config = config;
     }
 
-    @Override
-    public boolean sendTweet(String input) {
-        return false;
-    }
-
     /**
      * Get statuses from a timeline.
      * @param count     Number of tweets
      * @return          Sorted set of tweets found
+     *
+     * @version 26.04.2015
+     * Warning: not tested! SSL implementation required.
      */
     @Override
-    public SortedSet<Tweet> showTweets(int count) {
+     public SortedSet<Tweet> showTweets(int count) {
         String oauth_token = ACCESS_TOKEN;
         String oauth_token_secret = ACCESS_TOKEN_SECRET;
         String oauth_signature_method = "HMAC-SHA1";
 
-        // Generate nonce = number used once
-        String uuid_string = UUID.randomUUID().toString();
-        uuid_string = uuid_string.replaceAll("-", "");
-        String oauth_nonce = uuid_string;
-
-        // Get timestamp
-        Calendar tempcal = Calendar.getInstance();
-        long ts = tempcal.getTimeInMillis();
-        String oauth_timestamp = (new Long(ts/1000)).toString(); // Divide by 1000 to get seconds
+        // Generate nonce and timestamp for SSL protocol
+        String oauth_nonce = generateNonce();
+        String oauth_timestamp = generateTimestamp();
 
         // The parameter string must be in alphabetical order
         String parameter_string =
@@ -64,6 +57,7 @@ public class TwitterApiImpl implements TwitterApi {
                 "&oauth_timestamp=" + oauth_timestamp +
                 "&oauth_token=" + Encode.encode(oauth_token) +
                 "&oauth_version=1.0";
+
         String endpoint = "https://api.twitter.com/1.1/statuses/home_timeline.json";
         String endpoint_host = "api.twitter.com";
         String endpoint_path = "/1.1/statuses/home_timeline.json";
@@ -82,16 +76,19 @@ public class TwitterApiImpl implements TwitterApi {
                 "\",oauth_token=\"" + Encode.encode(oauth_token) +
                 "\"";
 
+        // Build the parameters into sending method
         HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
         httpBuilder.method("POST");
-        httpBuilder.protocol("HTTP/1.1");       // possibly change to SSL?
+        httpBuilder.protocol("HTTP/1.1");
         httpBuilder.path(endpoint_path);
         httpBuilder.host(endpoint_host);
-        httpBuilder.userAgent("IB053_Project"); // HttpCore/1.1
+        httpBuilder.userAgent("IB053_Project");
         httpBuilder.authorization(authorization_header_string);
         httpBuilder.content("?count=" + count);
 
         String jsonString = null;
+
+        // Send the request
         try {
             jsonString = httpBuilder.send();
         }
@@ -100,12 +97,12 @@ public class TwitterApiImpl implements TwitterApi {
         }
 
         if (jsonString == null) {
-            System.err.println("Object returned by Twitter is null!");
+            System.err.println("Object returned by Twitter is null!");      // Add exception
             return null;
         }
 
-        JSONArray jsonArray = new JSONArray();
-        JSONObject json = new JSONObject();
+        JSONArray jsonArray;
+        JSONObject json;
 
         // If we don't get JSONArray, there is probably an error
         try {
@@ -136,10 +133,11 @@ public class TwitterApiImpl implements TwitterApi {
         JSONObject user;
         String username;
 
+        // Parse the array of tweets
         try {
-            // Parse the array of tweets
             for (int i = 0; i < jsonArray.length(); i++) {
                 singleTweet = jsonArray.getJSONObject(i);
+
                 id = Long.parseLong(singleTweet.get("id").toString());
                 text = singleTweet.get("text").toString();
                 created = singleTweet.get("created_at").toString();
@@ -161,10 +159,130 @@ public class TwitterApiImpl implements TwitterApi {
         return tweets;
     }
 
+    /**
+     * Posts tweet with user-defined text.
+     * @param input     Text to be posted
+     * @return          True if status was updated successfully; false if something went wrong
+     *
+     * @version 29.04.2015
+     * Warning: not tested! SSL implementation required.
+     */
+    @Override
+    public boolean sendTweet(String input) {
+        String oauth_token = ACCESS_TOKEN;
+        String oauth_token_secret = ACCESS_TOKEN_SECRET;
+        String oauth_signature_method = "HMAC-SHA1";
+
+        // Generate nonce and timestamp for SSL protocol
+        String oauth_nonce = generateNonce();
+        String oauth_timestamp = generateTimestamp();
+
+        // The parameter string must be in alphabetical order
+        String parameter_string =
+                "&oauth_consumer_key=" + CONSUMER_KEY +
+                "&oauth_nonce=" + oauth_nonce +
+                "&oauth_signature_method=" + oauth_signature_method +
+                "&oauth_timestamp=" + oauth_timestamp +
+                "&oauth_token=" + Encode.encode(oauth_token) +
+                "&oauth_version=1.0" +
+                "&status=" + Encode.encode(input);
+
+        String endpoint = "https://api.twitter.com/1.1/statuses/update.json";
+        String endpoint_host = "api.twitter.com";
+        String endpoint_path = "/1.1/statuses/update.json";
+        String signature_base_string = "POST" + "&"+ Encode.encode(endpoint) + "&" + Encode.encode(parameter_string);
+
+        // Sign base string using CONSUMER_SECRET + "&" + encode(oauth_token_secret)
+        String oauth_signature = Encode.hash(signature_base_string, CONSUMER_SECRET, oauth_token_secret);
+
+        String authorization_header_string =
+                "OAuth oauth_consumer_key=\"" + CONSUMER_KEY +
+                "\",oauth_signature_method=\"HMAC-SHA1\"," +
+                "oauth_timestamp=\"" + oauth_timestamp +
+                "\",oauth_nonce=\"" + oauth_nonce +
+                "\",oauth_version=\"1.0\"," +
+                "oauth_signature=\"" + Encode.encode(oauth_signature) +
+                "\",oauth_token=\"" + Encode.encode(oauth_token) +
+                "\"";
+
+        // Build the parameters into sending method
+        HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
+        httpBuilder.method("POST");
+        httpBuilder.protocol("HTTP/1.1");
+        httpBuilder.path(endpoint_path);
+        httpBuilder.host(endpoint_host);
+        httpBuilder.userAgent("IB053_Project");
+        httpBuilder.authorization(authorization_header_string);
+        httpBuilder.content("?status=" + Encode.encode(input));
+
+        String jsonString = null;
+        JSONObject json;
+
+        // Send the request
+        try {
+            jsonString = httpBuilder.send();
+            json = new JSONObject(jsonString);
+
+            if (json.has("errors")) {
+                String message_from_twitter = json.getJSONArray("errors").getJSONObject(0).getString("message");
+                if (message_from_twitter.equals("Invalid or expired token") || message_from_twitter.equals("Could not authenticate you")) {
+                    System.err.println("Twitter authorization error.");
+                    return false;
+                }
+                else {
+                    System.err.println(json.getJSONArray("errors").getJSONObject(0).getString("message"));
+                    return false;
+                }
+            }
+
+            if (jsonString == null) {
+                System.err.println("Object returned by Twitter is null!");      // Add exception
+                return false;
+            }
+
+            // Check if returned JSON matches sent input
+            if (!json.get("text").toString().equals(input)) {
+                System.err.println("Input and returned string don't match!");
+                return false;
+            }
+        }
+        catch (BadResponseCodeException brce) {
+            brce.printStackTrace();
+            return false;
+        }
+        catch (JSONException jsne) {
+            jsne.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
     public String hello() {
         JSONObject json = new JSONObject();
 
         return HttpNative.hello();
+    }
+
+    /**
+     * Nonce = number used once. Required by SSL protocol.
+     * @return  String of ciphers
+     */
+    private String generateNonce() {
+        String uuid_string = UUID.randomUUID().toString();
+        uuid_string = uuid_string.replaceAll("-", "");
+        return uuid_string;
+    }
+
+    /**
+     * Generate timestamp. Required by SSL protocol.
+     * @return  String value of current time in seconds.
+     */
+    private String generateTimestamp() {
+        Calendar tempcal = Calendar.getInstance();
+        long ts = tempcal.getTimeInMillis();
+        String timestamp = (new Long(ts/1000)).toString(); // Divide by 1000 to get seconds
+        return timestamp;
     }
 
     /**

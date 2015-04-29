@@ -4,6 +4,10 @@ import java.time.Instant;
 
 /**
  * Created by Wallecnik on 23.04.15.
+ * @author Dužinka
+ * @version 29.04.2015
+ * Warning! Instead of Instant created, String is used temporarily.
+ * There might be some difficulties with String -> Instant conversion.
  */
 public final class Tweet implements Comparable<Tweet> {
 
