@@ -148,20 +148,20 @@ const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_s
     //headers = curl_slist_append(headers, curl_user_agent.c_str());
 
     if(curl) {
+        //set url
+        curl_easy_setopt(curl, CURLOPT_URL, str_url.c_str());
+
         //set host and peer verification
         //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
         //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, true);
-        
-        //set url
-        curl_easy_setopt(curl, CURLOPT_URL, str_url.c_str());
-        
+
+        //set headers
+        //curl_easy_setopt(curl, CURLOPT_USERAGENT, str_userAgent);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
         //set werification function and return variable
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_output);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret_val);
-
-        //set headers
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, str_userAgent);
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
                 
         //set protocol, default value is set automatically by curl if not one of bellow
         if(str_protocol == "HTTP/1.0"){
@@ -174,16 +174,16 @@ const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_s
         if(!strcmp(str_method, "POST")){
             //curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
             curl_easy_setopt(curl, CURLOPT_POST, 1);
-            if(strlen(str_content) > 0){
-                curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, str_content);
-            }
         }
         if(!strcmp(str_method, "GET")){
             curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
         }
-        
+
+        if(strlen(str_content) > 0){
+            curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, str_content);
+        }
+
         res = curl_easy_perform(curl);
-        
         
         /* Check for errors */
         if(res != CURLE_OK)  {
