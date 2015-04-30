@@ -14,7 +14,7 @@ public interface TwitterApi {
     boolean sendTweet(String input);
 
     /**
-     * Returns List of <code>count</code> last tweets.
+     * Returns SortedSet of <code>count</code> last tweets.
      * Latest tweets are listed first.
      *
      * @param count
