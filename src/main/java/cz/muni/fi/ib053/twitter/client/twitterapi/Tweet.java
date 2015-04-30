@@ -1,7 +1,5 @@
 package cz.muni.fi.ib053.twitter.client.twitterapi;
 
-import java.time.Instant;
-
 /**
  * Created by Wallecnik on 23.04.15.
  * @author Dužinka
@@ -85,11 +83,9 @@ public final class Tweet implements Comparable<Tweet> {
 
     @Override
     public String toString() {
-        return "Tweet{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", text='" + text + '\'' +
-                ", created='" + created + '\'' +
-                '}';
+        return
+                "User: " + username + '\n' +
+                "Created: " + created + '\n' +
+                text;
     }
 }

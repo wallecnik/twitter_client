@@ -4,9 +4,13 @@ import cz.muni.fi.ib053.twitter.client.Config;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.Calendar;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.UUID;
 
 /**
  * @author Dužinka
@@ -18,6 +22,8 @@ import java.util.*;
 public class TwitterApiImpl implements TwitterApi {
 
     private Config config;
+
+    public static Logger log = log = LoggerFactory.getLogger(TwitterApiImpl.class);
 
     private static final String CONSUMER_KEY = "ZbuOrAFMIQ4XiEfYcPbR4KMs8";
     private static final String CONSUMER_SECRET = "mLIasoEApiqJqieZZNjn3tt2QyMoeA8swH2M4oGUmlkRGURE0T";
@@ -78,7 +84,7 @@ public class TwitterApiImpl implements TwitterApi {
 
         // Build the parameters into sending method
         HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
-        httpBuilder.method("POST");
+        httpBuilder.method("GET");
         httpBuilder.protocol("HTTP/1.1");
         httpBuilder.path(endpoint_path);
         httpBuilder.host(endpoint_host);
@@ -91,6 +97,9 @@ public class TwitterApiImpl implements TwitterApi {
         // Send the request
         try {
             jsonString = httpBuilder.send();
+            if (jsonString != null) {
+                System.err.println("Got: " + jsonString);
+            }
         }
         catch (BadResponseCodeException brce) {
             brce.printStackTrace();
@@ -188,7 +197,7 @@ public class TwitterApiImpl implements TwitterApi {
                 "&status=" + Encode.encode(input);
 
         String endpoint = "https://api.twitter.com/1.1/statuses/update.json";
-        String endpoint_host = "api.twitter.com";
+        String endpoint_host = "https://api.twitter.com";
         String endpoint_path = "/1.1/statuses/update.json";
         String signature_base_string = "POST" + "&"+ Encode.encode(endpoint) + "&" + Encode.encode(parameter_string);
 
@@ -256,12 +265,6 @@ public class TwitterApiImpl implements TwitterApi {
         }
 
         return true;
-    }
-
-    public String hello() {
-        JSONObject json = new JSONObject();
-
-        return HttpNative.hello();
     }
 
     /**

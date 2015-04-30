@@ -9,8 +9,6 @@ import java.util.SortedSet;
  */
 public interface TwitterApi {
 
-    String hello();
-
     boolean sendTweet(String input);
 
     /**

@@ -112,13 +112,14 @@ public class Main {
                 }
                 int count = Integer.valueOf(args[1]);
                 SortedSet<Tweet> tweets = controller.showTweets(count);
-                if (tweets.size() == 0) {
-                    log.trace("Empty collection returned for request of" + count + " tweets");
-                    System.out.println("No tweets...");
-                }
-                else {
-                    for (Tweet tweet : tweets) {
-                        System.out.println(tweet);
+                if (tweets != null) {
+                    if (tweets.size() == 0) {
+                        log.trace("Empty collection returned for request of" + count + " tweets");
+                        System.out.println("No tweets...");
+                    } else {
+                        for (Tweet tweet : tweets) {
+                            System.out.println(tweet);
+                        }
                     }
                 }
                 break;
