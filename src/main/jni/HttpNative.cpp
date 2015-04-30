@@ -1,6 +1,6 @@
 
-#include <jni.h>
-//#include "../../../../../../java/jdk1.8.0_40/include/jni.h"
+//#include <jni.h>
+#include "../../../../../../java/jdk1.8.0_40/include/jni.h"
 #include "HttpNative.h"
 #include <curl/curl.h>
 #include <cstdio>
@@ -21,13 +21,51 @@ extern "C" {
 
 
 
-
+/*
+ *java to c transfer function
+ * 
+ * --log 1: add verification if attributes are not null
+ * to do: change behavior of some cases when 
+ */
 JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNative_httpRequest
   (JNIEnv *env, jclass obj, jstring jstr_method, jstring jstr_protocol, jstring jstr_path, jstring jstr_host, jstring jstr_usetAgent, jstring jstr_autorization, jstring jstr_content){
     if(env == NULL){
         //in future change to throwing exception
         return env->NewStringUTF("bed call of function");
     }
+    
+    if(jstr_method == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string method is null");
+    }
+    if(jstr_protocol == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string protocol is null");
+    }
+    if(jstr_path == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string patj is null");
+    }
+    if(jstr_host == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string host is null");
+    }
+    if(jstr_usetAgent == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string usetAgent is null");
+    }
+    if(jstr_autorization == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string autorization is null");
+    }
+    if(jstr_content == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string content is null");
+    }
+
+    //TO DO: change reaction on null input
+
+    
     const char* str_method           = env->GetStringUTFChars(jstr_method, 0);
     const char* str_protocol         = env->GetStringUTFChars(jstr_protocol, 0);
     const char* str_path             = env->GetStringUTFChars(jstr_path, 0);
@@ -36,7 +74,6 @@ JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNa
     const char* str_autorization     = env->GetStringUTFChars(jstr_autorization, 0);
     const char* str_content          = env->GetStringUTFChars(jstr_content, 0);
 
-    //TO DO: check if input is not null
 
     const_old_string ret_val = HttpNative_httpRequest(str_method, str_protocol, str_path, str_host, str_usetAgent, str_autorization, str_content);
 
@@ -69,7 +106,7 @@ size_t save_output(void *buffer, size_t size, size_t nmemb, std::string* msg_to_
 
 /*TO DO: add throwing exception
  *
- * method for calling http request, none of strings shouldn't be NULL 
+ * c++ method for calling http request, none of strings shouldn't be NULL 
  * return message that was requested
  */
 const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_string str_protocol, const_old_string str_path, const_old_string str_host, const_old_string str_usetAgent, const_old_string str_autorization, const_old_string str_content){
@@ -77,30 +114,79 @@ const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_s
     CURLcode res;
     std::string ret_val;
 
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+    
+    //create url
     std::string str_url;
     str_url.clear();
     str_url.append(str_host);
     str_url.append(str_path);
-    //curl_httppost a ;
-    curl = curl_easy_init();
-    if(curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, str_url.c_str());
-        //curl_easy_setopt(curl, CURLOPT_HTTPPOST, );
-        /* example.com is redirected, so we tell libcurl to follow redirection */
+    
+    //create headders 
+    struct curl_slist *headers = NULL;
+                    //???maybe application/json send as parameter???
+    headers = curl_slist_append(headers, "Accept: application/json");
+    headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded;charset=UTF-8.");
+    //headers = curl_slist_append(headers, str_autorization);
+    //headers = curl_slist_append(headers, "Content-Length: 29");
+    headers = curl_slist_append(headers, "Accept-Encoding: application/json");
+    headers = curl_slist_append(headers, "charsets: utf-8");
 
+    
+    if(curl) {
+        //set host and peer verification
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, true);
+        
+        //set url
+        curl_easy_setopt(curl, CURLOPT_URL, str_url.c_str());
+        
+        //set werification function and return variable
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_output);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret_val);
-        /* Perform the request, res will get the return code */
 
+        //set method
+        if(!strcmp(str_method, "POST")){
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+            curl_easy_setopt(curl, CURLOPT_POST, 1);
+        }else{
+            curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+        }    
+        
+        //set headers
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, str_usetAgent);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+                
+        //set protocol, default value is set automatically by curl if not one of bellow
+        if(str_protocol == "HTTP/1.0"){
+            curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        }else if(str_protocol == "HTTP/1.1"){
+            curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        }else if(str_protocol == "HTTP/2.0"){
+            curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+        }
+        
+        if(strlen(str_content) > 0){
+            curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, str_content);           
+        }
+        
+        
         res = curl_easy_perform(curl);
+        
+        
         /* Check for errors */
         if(res != CURLE_OK)  {
            std::cout << "curl_easy_perform() failed: " <<  curl_easy_strerror(res) << std::endl;
         }
-        /* do something */
-        /* always cleanup */
+        
         curl_easy_cleanup(curl);
     }
+    
+    curl_slist_free_all(headers);
+    curl_global_cleanup();
+    
+    
     return ret_val.c_str();
 }
 
