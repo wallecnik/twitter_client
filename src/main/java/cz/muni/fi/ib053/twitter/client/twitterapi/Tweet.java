@@ -1,28 +1,30 @@
 package cz.muni.fi.ib053.twitter.client.twitterapi;
 
+import java.time.Instant;
+import java.time.ZoneId;
+
 /**
  * Created by Wallecnik on 23.04.15.
  * @author Dužinka
- * @version 29.04.2015
- * Warning! Instead of Instant created, String is used temporarily.
- * There might be some difficulties with String -> Instant conversion.
+ * @version 07.05.2015
+ *
+ * Instant not tested in final app.
  */
 public final class Tweet implements Comparable<Tweet> {
 
-    //private final Instant   created;      // TODO: Solve problems with String -> Instant conversion
+    private final Instant created;
     private final Long      id;
     private final String    username;
     private final String    text;
-    private final String    created;
 
-    public Tweet(Long id, String created, String username, String text) {
+    public Tweet(Long id, Instant created, String username, String text) {
         this.id      = id;
         this.created = created;
         this.username = username;
         this.text = text;
     }
 
-    public String getCreated() {
+    public Instant getCreated() {
         return created;
     }
 
@@ -85,7 +87,13 @@ public final class Tweet implements Comparable<Tweet> {
     public String toString() {
         return
                 "User: " + username + '\n' +
-                "Created: " + created + '\n' +
+                "Created: " + created.atZone(ZoneId.of("+0634")) + '\n' +
                 text;
     }
+
+    /*@Override
+    public String toString() {
+        return
+                username + " (" + created + ") says: " + text;
+    }*/
 }

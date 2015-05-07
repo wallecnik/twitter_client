@@ -7,23 +7,24 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * @author Dužinka
- * @version 26.04.2015
+ * @version 07.05.2015
  *
  * To be consistent with Twitter parameter name conventions, variables are not camelCased.
- *
  */
 public class TwitterApiImpl implements TwitterApi {
 
     private Config config;
 
-    public static Logger log = log = LoggerFactory.getLogger(TwitterApiImpl.class);
+    public static Logger log = LoggerFactory.getLogger(TwitterApiImpl.class);
 
     private static final String CONSUMER_KEY = "ZbuOrAFMIQ4XiEfYcPbR4KMs8";
     private static final String CONSUMER_SECRET = "mLIasoEApiqJqieZZNjn3tt2QyMoeA8swH2M4oGUmlkRGURE0T";
@@ -54,7 +55,8 @@ public class TwitterApiImpl implements TwitterApi {
         String oauth_nonce = generateNonce();
         String oauth_timestamp = generateTimestamp();
 
-        // The parameter string must be in alphabetical order
+        // The parameter string must be in alphabetical order,
+        // therefore it's not a good idea to make it into a separate method.
         String parameter_string =
                 "count=" + count +
                 "&oauth_consumer_key=" + CONSUMER_KEY +
@@ -72,15 +74,8 @@ public class TwitterApiImpl implements TwitterApi {
         // Sign base string using CONSUMER_SECRET + "&" + encode(oauth_token_secret)
         String oauth_signature = Encode.hash(signature_base_string, CONSUMER_SECRET, oauth_token_secret);
 
-        String authorization_header_string =
-                "OAuth oauth_consumer_key=\"" + CONSUMER_KEY +
-                "\",oauth_signature_method=\"HMAC-SHA1\"," +
-                "oauth_timestamp=\"" + oauth_timestamp +
-                "\",oauth_nonce=\"" + oauth_nonce +
-                "\",oauth_version=\"1.0\"," +
-                "oauth_signature=\"" + Encode.encode(oauth_signature) +
-                "\",oauth_token=\"" + Encode.encode(oauth_token) +
-                "\"";
+        // Generate authorization header
+        String authorization_header_string = generateAuthorizationHeader(oauth_timestamp, oauth_nonce, oauth_signature, oauth_token);
 
         // Build the parameters into sending method
         HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
@@ -96,18 +91,23 @@ public class TwitterApiImpl implements TwitterApi {
 
         // Send the request
         try {
+            log.info("Sending message: \n" +
+                        "Parameter string: " + parameter_string +
+                        "Signature base string: " + signature_base_string +
+                        "Authorization header: " + authorization_header_string);
             jsonString = httpBuilder.send();
-            if (jsonString != null) {
-                System.err.println("Got: " + jsonString);
+            if (jsonString == null) {
+                System.err.println("Null response from the server.");
+                log.error("Response from httpBuilder.send() was null.");
+                return null;
+            }
+            else {
+                log.info("Object returned from httpBuilder.send(): " + jsonString);
             }
         }
         catch (BadResponseCodeException brce) {
-            brce.printStackTrace();
-        }
-
-        if (jsonString == null) {
-            System.err.println("Object returned by Twitter is null!");      // Add exception
-            return null;
+            System.err.println("Bad response code from the server.");
+            log.error("Bad response code exception: " + brce.getMessage());
         }
 
         JSONArray jsonArray;
@@ -120,13 +120,16 @@ public class TwitterApiImpl implements TwitterApi {
         catch (JSONException jse) {
             json = new JSONObject(jsonString);
 
-            // TODO: Create new Twitter-related exception and pass it to higher level of application
             if (json.has("errors")) {
                 String message_from_twitter = json.getJSONArray("errors").getJSONObject(0).getString("message");
-                if(message_from_twitter.equals("Invalid or expired token") || message_from_twitter.equals("Could not authenticate you"))
+                if (message_from_twitter.equals("Invalid or expired token") || message_from_twitter.equals("Could not authenticate you")) {
                     System.err.println("Twitter authorization error.");
-                else
+                    log.error("Error with authorization:" + message_from_twitter);
+                }
+                else {
                     System.err.println(json.getJSONArray("errors").getJSONObject(0).getString("message"));
+                    log.error(json.getJSONArray("errors").getJSONObject(0).getString("message"));
+                }
             }
 
             return null;
@@ -136,7 +139,7 @@ public class TwitterApiImpl implements TwitterApi {
         SortedSet<Tweet> tweets = new TreeSet<Tweet>();
 
         Tweet tweet;
-        String created;
+        Instant created;
         String text;
         Long id;
         JSONObject user;
@@ -149,7 +152,12 @@ public class TwitterApiImpl implements TwitterApi {
 
                 id = Long.parseLong(singleTweet.get("id").toString());
                 text = singleTweet.get("text").toString();
-                created = singleTweet.get("created_at").toString();
+                String date = singleTweet.get("created_at").toString();
+
+                DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("EE MMM dd HH:mm:ss Z yyyy", new Locale("en", "EN"));
+                LocalDateTime localDate = LocalDateTime.parse(date, dateFormat);
+                ZonedDateTime zonedDateTime = localDate.atZone(ZoneId.of("CET"));
+                created = zonedDateTime.toInstant();
 
                 user = new JSONObject(singleTweet.get("user").toString());
                 username = user.get("screen_name").toString();
@@ -159,10 +167,12 @@ public class TwitterApiImpl implements TwitterApi {
             }
         }
         catch (NumberFormatException nfe) {
-            nfe.printStackTrace();
+            System.err.println(nfe.getMessage());
+            log.error(nfe.getMessage() + "\n" + nfe.getCause());
         }
         catch (JSONException jse) {
-            jse.printStackTrace();
+            System.err.println(jse.getMessage());
+            log.error(jse.getMessage() + "\n" + jse.getCause());
         }
 
         return tweets;
@@ -204,15 +214,8 @@ public class TwitterApiImpl implements TwitterApi {
         // Sign base string using CONSUMER_SECRET + "&" + encode(oauth_token_secret)
         String oauth_signature = Encode.hash(signature_base_string, CONSUMER_SECRET, oauth_token_secret);
 
-        String authorization_header_string =
-                "OAuth oauth_consumer_key=\"" + CONSUMER_KEY +
-                "\",oauth_signature_method=\"HMAC-SHA1\"," +
-                "oauth_timestamp=\"" + oauth_timestamp +
-                "\",oauth_nonce=\"" + oauth_nonce +
-                "\",oauth_version=\"1.0\"," +
-                "oauth_signature=\"" + Encode.encode(oauth_signature) +
-                "\",oauth_token=\"" + Encode.encode(oauth_token) +
-                "\"";
+        // Generate authorization header
+        String authorization_header_string = generateAuthorizationHeader(oauth_timestamp, oauth_nonce, oauth_signature, oauth_token);
 
         // Build the parameters into sending method
         HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
@@ -230,38 +233,52 @@ public class TwitterApiImpl implements TwitterApi {
 
         // Send the request
         try {
+            log.info("Sending message: \n" +
+                    "Parameter string: " + parameter_string +
+                    "Signature base string: " + signature_base_string +
+                    "Authorization header: " + authorization_header_string);
             jsonString = httpBuilder.send();
+
+            if (jsonString == null) {
+                System.err.println("Null response from the server.");
+                log.error("Response from httpBuilder.send() was null.");
+                return false;
+            }
+            else {
+                log.info("Object returned from httpBuilder.send(): " + jsonString);
+            }
+
             json = new JSONObject(jsonString);
 
             if (json.has("errors")) {
                 String message_from_twitter = json.getJSONArray("errors").getJSONObject(0).getString("message");
                 if (message_from_twitter.equals("Invalid or expired token") || message_from_twitter.equals("Could not authenticate you")) {
                     System.err.println("Twitter authorization error.");
+                    log.error("Error with authorization:" + message_from_twitter);
                     return false;
                 }
                 else {
                     System.err.println(json.getJSONArray("errors").getJSONObject(0).getString("message"));
+                    log.error(json.getJSONArray("errors").getJSONObject(0).getString("message"));
                     return false;
                 }
             }
 
-            if (jsonString == null) {
-                System.err.println("Object returned by Twitter is null!");      // Add exception
-                return false;
-            }
-
             // Check if returned JSON matches sent input
             if (!json.get("text").toString().equals(input)) {
-                System.err.println("Input and returned string don't match!");
+                System.err.println("Communication error, please try again.");
+                log.error("Input and returned string don't match.");
                 return false;
             }
         }
         catch (BadResponseCodeException brce) {
-            brce.printStackTrace();
+            System.err.println("Bad response code from the server.");
+            log.error("Bad response code exception: " + brce.getMessage());
             return false;
         }
-        catch (JSONException jsne) {
-            jsne.printStackTrace();
+        catch (JSONException jse) {
+            System.err.println(jse.getMessage());
+            log.error(jse.getMessage() + "\n" + jse.getCause());
             return false;
         }
 
@@ -287,6 +304,26 @@ public class TwitterApiImpl implements TwitterApi {
         long ts = tempcal.getTimeInMillis();
         String timestamp = (new Long(ts/1000)).toString(); // Divide by 1000 to get seconds
         return timestamp;
+    }
+
+    /**
+     * Generates an authorization header.
+     * @param oauth_timestamp
+     * @param oauth_nonce
+     * @param oauth_signature
+     * @param oauth_token
+     * @return
+     */
+    private String generateAuthorizationHeader (String oauth_timestamp, String oauth_nonce,
+                                                String oauth_signature, String oauth_token) {
+        return  "OAuth oauth_consumer_key=\"" + CONSUMER_KEY +
+                "\",oauth_signature_method=\"HMAC-SHA1\"," +
+                "oauth_timestamp=\"" + oauth_timestamp +
+                "\",oauth_nonce=\"" + oauth_nonce +
+                "\",oauth_version=\"1.0\"," +
+                "oauth_signature=\"" + Encode.encode(oauth_signature) +
+                "\",oauth_token=\"" + Encode.encode(oauth_token) +
+                "\"";
     }
 
     /**
