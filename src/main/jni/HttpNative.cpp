@@ -12,7 +12,7 @@
 typedef char* old_string;
 typedef const char* const_old_string;
 
-const_old_string HttpNative_httpRequest(const_old_string method, const_old_string protocol, const_old_string jpath, const_old_string host, const_old_string userAgent, const_old_string autorization, const_old_string content);
+const_old_string HttpNative_httpRequest(const_old_string method, const_old_string protocol, const_old_string jpath, const_old_string host, const_old_string userAgent, const_old_string autorization, const_old_string content, const_old_string timestamp);
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ extern "C" {
  * to do: change behavior of some cases when 
  */
 JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNative_httpRequest
-  (JNIEnv *env, jclass obj, jstring jstr_method, jstring jstr_protocol, jstring jstr_path, jstring jstr_host, jstring jstr_userAgent, jstring jstr_authorization, jstring jstr_content){
+  (JNIEnv *env, jclass obj, jstring jstr_method, jstring jstr_protocol, jstring jstr_path, jstring jstr_host, jstring jstr_userAgent, jstring jstr_authorization, jstring jstr_content, jstring jstr_timestamp){
     if(env == NULL){
         //in future change to throwing exception
         return env->NewStringUTF("bed call of function");
@@ -62,6 +62,10 @@ JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNa
         //in future change to throwing exception
         return env->NewStringUTF("java string content is null");
     }
+    if(jstr_timestamp == NULL){
+        //in future change to throwing exception
+        return env->NewStringUTF("java string timestamp is null");
+    }
 
     //TO DO: change reaction on null input
 
@@ -71,11 +75,12 @@ JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNa
     const char* str_path             = env->GetStringUTFChars(jstr_path, 0);
     const char* str_host             = env->GetStringUTFChars(jstr_host, 0);
     const char* str_userAgent        = env->GetStringUTFChars(jstr_userAgent, 0);
-    const char* str_authorization     = env->GetStringUTFChars(jstr_authorization, 0);
+    const char* str_authorization    = env->GetStringUTFChars(jstr_authorization, 0);
     const char* str_content          = env->GetStringUTFChars(jstr_content, 0);
+    const char* str_timestamp        = env->GetStringUTFChars(jstr_timestamp, 0);
 
 
-    const_old_string ret_val = HttpNative_httpRequest(str_method, str_protocol, str_path, str_host, str_userAgent, str_authorization, str_content);
+    const_old_string ret_val = HttpNative_httpRequest(str_method, str_protocol, str_path, str_host, str_userAgent, str_authorization, str_content, str_timestamp);
 
     env->ReleaseStringUTFChars(jstr_method, str_method);
     env->ReleaseStringUTFChars(jstr_protocol, str_protocol);
@@ -84,6 +89,7 @@ JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNa
     env->ReleaseStringUTFChars(jstr_userAgent, str_userAgent);
     env->ReleaseStringUTFChars(jstr_authorization, str_authorization);
     env->ReleaseStringUTFChars(jstr_content, str_content);
+    env->ReleaseStringUTFChars(jstr_timestamp, str_timestamp);
 
     return env->NewStringUTF(ret_val);
 
@@ -109,7 +115,7 @@ size_t save_output(void *buffer, size_t size, size_t nmemb, std::string* msg_to_
  * c++ method for calling http request, none of strings shouldn't be NULL 
  * return message that was requested
  */
-const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_string str_protocol, const_old_string str_path, const_old_string str_host, const_old_string str_userAgent, const_old_string str_authorization, const_old_string str_content){
+const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_string str_protocol, const_old_string str_path, const_old_string str_host, const_old_string str_userAgent, const_old_string str_authorization, const_old_string str_content, const_old_string str_timestamp){
 
     CURL * curl;
     CURLcode res;
@@ -138,6 +144,10 @@ const_old_string HttpNative_httpRequest(const_old_string str_method, const_old_s
     std::string curl_authorization = "Authorization: ";
     curl_authorization.append(str_authorization);
     headers = curl_slist_append(headers, curl_authorization.c_str());
+
+    std::string curl_timestamp = "Timestamp: ";
+    curl_timestamp.append(str_timestamp);
+    headers = curl_slist_append(headers, curl_timestamp.c_str());
 
     //std::string curl_host = "Host: ";
     //curl_host.append(str_host);

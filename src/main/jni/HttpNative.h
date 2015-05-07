@@ -16,7 +16,7 @@ extern "C" {
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_cz_muni_fi_ib053_twitter_client_twitterapi_HttpNative_httpRequest
-  (JNIEnv * env, jclass obj, jstring a, jstring b, jstring c, jstring d, jstring e, jstring f, jstring g);
+  (JNIEnv * env, jclass obj, jstring a, jstring b, jstring c, jstring d, jstring e, jstring f, jstring g, jstring h);
 
 //std::string HttpNative_httpRequest(const char* method, const char* protocol, const char* jpath, const char* host, const char* userAgent, const char* authorization, const char* content);
 

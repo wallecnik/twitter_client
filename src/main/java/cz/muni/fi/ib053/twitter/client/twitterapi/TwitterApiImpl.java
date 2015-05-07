@@ -223,6 +223,7 @@ public class TwitterApiImpl implements TwitterApi {
         httpBuilder.userAgent("IB053_Project");
         httpBuilder.authorization(authorization_header_string);
         httpBuilder.content("?status=" + Encode.encode(input));
+        httpBuilder.timestamp(oauth_timestamp);
 
         String jsonString = null;
         JSONObject json;
@@ -293,10 +294,10 @@ public class TwitterApiImpl implements TwitterApi {
      * @author Wallecnik
      */
     private static class HttpRequestBuilder {
-        String method, protocol, path, host, userAgent, authorization, content = null;
+        String method, protocol, path, host, userAgent, authorization, content, timestamp = null;
 
         public String send() throws BadResponseCodeException {
-            String retval = HttpNative.httpRequest(method, protocol, path, host, userAgent, authorization, content);
+            String retval = HttpNative.httpRequest(method, protocol, path, host, userAgent, authorization, content, timestamp);
             method = null;
             protocol = null;
             path = null;
@@ -304,6 +305,7 @@ public class TwitterApiImpl implements TwitterApi {
             userAgent = null;
             authorization = null;
             content = null;
+            timestamp = null;
             return retval;
         }
 
@@ -328,6 +330,8 @@ public class TwitterApiImpl implements TwitterApi {
         public void content(String content) {
             this.content = content;
         }
-
+        public void timestamp(String timestamp) {
+            this.timestamp = timestamp;
+        }
     }
 }

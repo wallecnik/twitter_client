@@ -2,14 +2,11 @@ package cz.muni.fi.ib053.twitter.client;
 
 
 import cz.muni.fi.ib053.twitter.client.twitterapi.*;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
@@ -29,29 +26,13 @@ public class Main {
 
         log = LoggerFactory.getLogger(Main.class);
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            platform = "win32";
-        }
-        if (SystemUtils.IS_OS_UNIX) {
-            platform = "unix";
-        }
-        if (SystemUtils.IS_OS_MAC) {
-            platform = "darwin";
-        }
-        try {
-            addLibraryPath("build/binaries/debug/" + platform);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-
-        System.loadLibrary("HttpNative"); // used for tests. This library in classpath only
-
-
         config = new ConfigImpl();
         try {
             config.load();
         } catch (IOException e) {
-            log.error("Unable to load configuration file. \n" + e);
+            log.error("Unable to load configuration file.", e);
+            System.err.println("Unable to load configuration file. \n" + e);
+            System.exit(-1);
         }
 
         controller = new TwitterApiImpl(config);
@@ -90,32 +71,32 @@ public class Main {
         switch (args[0]) {
             case "send":
                 if (args.length != 2) {
-                    System.out.println("Wrong parameter");
+                    System.err.println("Wrong parameter");
                     break;
                 }
                 boolean sucess = controller.sendTweet(args[1]);
                 if (!sucess) {
                     log.error("Unable to send tweet: " + args[1]);
-                    System.out.println("Fail...");
+                    System.err.println("Fail...");
                 }
                 else {
-                    System.out.println("Success!");
+                    System.err.println("Success!");
                 }
                 break;
             case "get":
                 if (args.length != 2) {
-                    System.out.println("Wrong parameter");
+                    System.err.println("Wrong parameter");
                     break;
                 }
                 if (!Pattern.matches("\\d+", args[1])) {
-                    System.out.println("Wrong parameter");
+                    System.err.println("Wrong parameter");
                 }
                 int count = Integer.valueOf(args[1]);
                 SortedSet<Tweet> tweets = controller.showTweets(count);
                 if (tweets != null) {
                     if (tweets.size() == 0) {
                         log.trace("Empty collection returned for request of" + count + " tweets");
-                        System.out.println("No tweets...");
+                        System.err.println("No tweets...");
                     } else {
                         for (Tweet tweet : tweets) {
                             System.out.println(tweet);
@@ -125,7 +106,7 @@ public class Main {
                 break;
             case "hello":
                 try {
-                    System.out.println(HttpNative.httpRequest("", "", "/file.txt", "http://tomas.valka.info", "", "", ""));
+                    System.out.println(HttpNative.httpRequest("", "", "/post.php?dir=FI_MUNI", "posttestserver.com", "", "string", "", ""));
                 } catch (BadResponseCodeException e) {
                     e.printStackTrace();
                 }
@@ -134,36 +115,8 @@ public class Main {
                 doContinue = false;
                 break;
             default:
-                System.out.println("\"" + args[0] + "\" was not recognized as internal command.");
+                System.err.println("\"" + args[0] + "\" was not recognized as internal command.");
                 break;
         }
     }
-
-    /**
-     * Adds the specified path to the java library path
-     *
-     * @param pathToAdd the path to add
-     * @throws Exception
-     * @author Fahd Shariff
-     */
-    public static void addLibraryPath(String pathToAdd) throws Exception {
-        final Field usrPathsField = ClassLoader.class.getDeclaredField("usr_paths");
-        usrPathsField.setAccessible(true);
-
-        //get array of paths
-        final String[] paths = (String[])usrPathsField.get(null);
-
-        //check if the path to add is already present
-        for(String path : paths) {
-            if(path.equals(pathToAdd)) {
-                return;
-            }
-        }
-
-        //add the new path
-        final String[] newPaths = Arrays.copyOf(paths, paths.length + 1);
-        newPaths[newPaths.length-1] = pathToAdd;
-        usrPathsField.set(null, newPaths);
-    }
-
 }

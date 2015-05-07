@@ -1,5 +1,7 @@
 package cz.muni.fi.ib053.twitter.client.twitterapi;
 
+import com.sun.istack.internal.NotNull;
+
 /**
  * Created by Wallecnik on 14.04.15.
  */
@@ -21,13 +23,14 @@ public class HttpNative {
      * @throws BadResponseCodeException whe other response code than 200 was returned
      */
     public static native String httpRequest (
-            String method,
-            String protocol,
-            String path,
-            String host,
+            @NotNull String method,
+            @NotNull String protocol,
+            @NotNull String path,
+            @NotNull String host,
             String userAgent,
-            String authorization,
-            String content
+            @NotNull String authorization,
+            String content,
+            @NotNull String timestamp
     ) throws BadResponseCodeException;
 
 }
