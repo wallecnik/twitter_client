@@ -86,7 +86,7 @@ public class TwitterApiImpl implements TwitterApi {
         httpBuilder.userAgent("IB053_Project");
         httpBuilder.authorization(authorization_header_string);
         httpBuilder.content("?count=" + count);
-
+        httpBuilder.timestamp(oauth_timestamp);
         String jsonString = null;
 
         // Send the request
@@ -198,7 +198,7 @@ public class TwitterApiImpl implements TwitterApi {
 
         // The parameter string must be in alphabetical order
         String parameter_string =
-                "&oauth_consumer_key=" + CONSUMER_KEY +
+                "oauth_consumer_key=" + CONSUMER_KEY +
                 "&oauth_nonce=" + oauth_nonce +
                 "&oauth_signature_method=" + oauth_signature_method +
                 "&oauth_timestamp=" + oauth_timestamp +
@@ -207,7 +207,7 @@ public class TwitterApiImpl implements TwitterApi {
                 "&status=" + Encode.encode(input);
 
         String endpoint = "https://api.twitter.com/1.1/statuses/update.json";
-        String endpoint_host = "https://api.twitter.com";
+        String endpoint_host = "api.twitter.com";
         String endpoint_path = "/1.1/statuses/update.json";
         String signature_base_string = "POST" + "&"+ Encode.encode(endpoint) + "&" + Encode.encode(parameter_string);
 
@@ -333,7 +333,7 @@ public class TwitterApiImpl implements TwitterApi {
     private static class HttpRequestBuilder {
         String method, protocol, path, host, userAgent, authorization, content, timestamp = null;
 
-        public String send() throws BadResponseCodeException {
+        public String send() throws BadResponseCodeException, IllegalArgumentException {
             String retval = HttpNative.httpRequest(method, protocol, path, host, userAgent, authorization, content, timestamp);
             method = null;
             protocol = null;
